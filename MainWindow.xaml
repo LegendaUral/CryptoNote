@@ -84,6 +84,11 @@
                     <MenuItem Header="Копировать" Style="{StaticResource SubMenuItemStyle}" Click="CopyText_Click"/>
                     <MenuItem Header="Вставить" Style="{StaticResource SubMenuItemStyle}" Click="PasteText_Click"/>
                 </MenuItem>
+
+                <MenuItem Header="Поделиться" Height="45" Padding="6,-5,6,0">
+                    <MenuItem Header="Поделиться в Telegram" Style="{StaticResource SubMenuItemStyle}" Click="Share_Telegram"/>
+                    <MenuItem Header="Поделиться по Email" Style="{StaticResource SubMenuItemStyle}" Click="Share_Email"/>
+                </MenuItem>
             </Menu>
         </Grid>
 

@@ -32,6 +32,19 @@ namespace CryptoNote
         private void Close_Click(object sender, RoutedEventArgs e) => Close();
         private void Exit_Click(object sender, RoutedEventArgs e) => Close();
 
+        private void Share_Telegram(object sender, RoutedEventArgs e)
+        {
+           
+            MessageBox.Show("Функция \"Поделиться в Telegram\" пока не реализована.");
+        }
+
+        private void Share_Email(object sender, RoutedEventArgs e)
+        {
+            
+            MessageBox.Show("Функция \"Поделиться в Email\" пока не реализована.");
+        }
+
+
         private void NewFile_Click(object sender, RoutedEventArgs e)
         {
             MainTextBox.Clear();
