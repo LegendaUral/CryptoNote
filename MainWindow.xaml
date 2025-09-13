@@ -1,10 +1,6 @@
 ﻿<Window x:Class="CryptoNote.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:CryptoNote"
-        mc:Ignorable="d"
         Title="CryptoNote" Height="450" Width="800"
         WindowStyle="None" ResizeMode="CanResizeWithGrip"
         Background="#FF151313">
@@ -34,6 +30,7 @@
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FFD700"/>
                     <Setter Property="Foreground" Value="Black"/>
                 </Trigger>
             </Style.Triggers>
@@ -62,7 +59,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <TextBlock Margin="10,0,0,0" VerticalAlignment="Center"
+            <TextBlock x:Name="TitleTextBlock" Margin="10,0,0,0" VerticalAlignment="Center"
                        Text="Новый файл.txt" Foreground="White" FontSize="20"/>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
@@ -75,17 +72,17 @@
         <Grid Grid.Row="1" Background="#FF2D2D2D">
             <Menu FontSize="20" Background="Transparent" Foreground="White" HorizontalAlignment="Stretch">
                 <MenuItem Header="Файл" Height="45" Padding="6,-5,6,0">
-                    <MenuItem Header="Создать" Style="{StaticResource SubMenuItemStyle}"/>
-                    <MenuItem Header="Открыть" Style="{StaticResource SubMenuItemStyle}"/>
-                    <MenuItem Header="Сохранить" Style="{StaticResource SubMenuItemStyle}"/>
-                    <MenuItem Header="Сохранить с шифрованием" Style="{StaticResource SubMenuItemStyle}"/>
-                    <MenuItem Header="Выход" Style="{StaticResource SubMenuItemStyle}"/>
+                    <MenuItem Header="Создать" Style="{StaticResource SubMenuItemStyle}" Click="NewFile_Click"/>
+                    <MenuItem Header="Открыть" Style="{StaticResource SubMenuItemStyle}" Click="OpenFile_Click"/>
+                    <MenuItem Header="Сохранить" Style="{StaticResource SubMenuItemStyle}" Click="SaveFile_Click"/>
+                    <MenuItem Header="Сохранить с шифрованием" Style="{StaticResource SubMenuItemStyle}" Click="SaveEncrypted_Click"/>
+                    <MenuItem Header="Выход" Style="{StaticResource SubMenuItemStyle}" Click="Exit_Click"/>
                 </MenuItem>
 
                 <MenuItem Header="Изменить" Height="45" Padding="6,-5,6,0">
-                    <MenuItem Header="Вырезать" Style="{StaticResource SubMenuItemStyle}"/>
-                    <MenuItem Header="Копировать" Style="{StaticResource SubMenuItemStyle}"/>
-                    <MenuItem Header="Вставить" Style="{StaticResource SubMenuItemStyle}"/>
+                    <MenuItem Header="Вырезать" Style="{StaticResource SubMenuItemStyle}" Click="CutText_Click"/>
+                    <MenuItem Header="Копировать" Style="{StaticResource SubMenuItemStyle}" Click="CopyText_Click"/>
+                    <MenuItem Header="Вставить" Style="{StaticResource SubMenuItemStyle}" Click="PasteText_Click"/>
                 </MenuItem>
             </Menu>
         </Grid>
@@ -99,5 +96,4 @@
         </Grid>
 
     </Grid>
-
 </Window>
