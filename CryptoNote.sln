@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36429.23 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CryptoNote", "CryptoNote.csproj", "{BD4FF09A-AEE1-411C-84B0-BC3A2D4731DF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BD4FF09A-AEE1-411C-84B0-BC3A2D4731DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD4FF09A-AEE1-411C-84B0-BC3A2D4731DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD4FF09A-AEE1-411C-84B0-BC3A2D4731DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD4FF09A-AEE1-411C-84B0-BC3A2D4731DF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {95FE88DD-6DFC-4C54-A6EF-945788BC8E72}
+	EndGlobalSection
+EndGlobal
