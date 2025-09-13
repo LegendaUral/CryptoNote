@@ -5,38 +5,99 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CryptoNote"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800"
-        WindowStyle="None">
+        Title="CryptoNote" Height="450" Width="800"
+        WindowStyle="None" ResizeMode="CanResizeWithGrip"
+        Background="#FF151313">
 
-    <Grid x:Name="MainRoot" Background="#FF151313">
+    <Window.Resources>
+        <Style x:Key="SubMenuItemStyle" TargetType="MenuItem">
+            <Setter Property="Background" Value="#333333"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="0"/>
+            <Style.Triggers>
+                <Trigger Property="IsHighlighted" Value="True">
+                    <Setter Property="Background" Value="#FFD700"/>
+                    <Setter Property="Foreground" Value="Black"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="WindowButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Black"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Padding" Value="5,2"/>
+            <Setter Property="Margin" Value="2,0"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Foreground" Value="Black"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="MainTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Background" Value="Black"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid x:Name="MainRoot">
         <Grid.RowDefinitions>
-            <RowDefinition x:Name="ToolBar" Height="75"/>
-            <RowDefinition x:Name="Menu" Height="85"/>
-            <RowDefinition x:Name="TextWrite"/>
+            <RowDefinition Height="45"/>
+            <RowDefinition Height="45"/>
+            <RowDefinition/>
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
-        <Grid Grid.Row="0" Grid.ColumnSpan="2" Background="Black">
-            <TextBlock Margin="5" Text="Новый файл.txt" Foreground="White" FontSize="48"/>
-        </Grid>
-        <Grid Grid.Row="1" Grid.ColumnSpan="2">
-            <Grid.Background>
-                <SolidColorBrush Color="#FFD9D9D9" Opacity="0.19"/>
-            </Grid.Background>
 
+        <Grid Grid.Row="0" Background="Black" MouseDown="TitleBar_MouseDown">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Margin="10,0,0,0" VerticalAlignment="Center"
+                       Text="Новый файл.txt" Foreground="White" FontSize="20"/>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Content="—" Width="40" Height="25" Style="{StaticResource WindowButtonStyle}" Click="Minimize_Click"/>
+                <Button Content="◻" Width="40" Height="25" Style="{StaticResource WindowButtonStyle}" Click="Maximize_Click"/>
+                <Button Content="✕" Width="40" Height="25" Style="{StaticResource WindowButtonStyle}" Click="Close_Click"/>
+            </StackPanel>
         </Grid>
-        <Menu Grid.Row="1" Margin="0,0,290,0">
-            <MenuItem Header="Файл">
-                <MenuItem Header="Создать"/>
-                <MenuItem Header="Открыть"/>
-                <MenuItem Header="Сохранить"/>
-                <MenuItem Header="Сохранить как..."/>
-                <MenuItem Header="Выход"/>
-                
-            </MenuItem>
-        </Menu>
+
+        <Grid Grid.Row="1" Background="#FF2D2D2D">
+            <Menu FontSize="20" Background="Transparent" Foreground="White" HorizontalAlignment="Stretch">
+                <MenuItem Header="Файл" Height="45" Padding="6,-5,6,0">
+                    <MenuItem Header="Создать" Style="{StaticResource SubMenuItemStyle}"/>
+                    <MenuItem Header="Открыть" Style="{StaticResource SubMenuItemStyle}"/>
+                    <MenuItem Header="Сохранить" Style="{StaticResource SubMenuItemStyle}"/>
+                    <MenuItem Header="Сохранить с шифрованием" Style="{StaticResource SubMenuItemStyle}"/>
+                    <MenuItem Header="Выход" Style="{StaticResource SubMenuItemStyle}"/>
+                </MenuItem>
+
+                <MenuItem Header="Изменить" Height="45" Padding="6,-5,6,0">
+                    <MenuItem Header="Вырезать" Style="{StaticResource SubMenuItemStyle}"/>
+                    <MenuItem Header="Копировать" Style="{StaticResource SubMenuItemStyle}"/>
+                    <MenuItem Header="Вставить" Style="{StaticResource SubMenuItemStyle}"/>
+                </MenuItem>
+            </Menu>
+        </Grid>
+
+        <Grid Grid.Row="2" Background="#FF151313">
+            <TextBox x:Name="MainTextBox" Style="{StaticResource MainTextBoxStyle}"
+                     Margin="10" AcceptsReturn="True"
+                     VerticalScrollBarVisibility="Auto"
+                     HorizontalScrollBarVisibility="Auto"
+                     TextWrapping="Wrap" Background="#FF151313"/>
+        </Grid>
+
     </Grid>
 
 </Window>
