@@ -34,7 +34,7 @@ namespace CryptoNote
 
         private void Share_Telegram(object sender, RoutedEventArgs e)
         {
-           
+        
             MessageBox.Show("Функция \"Поделиться в Telegram\" пока не реализована.");
         }
 

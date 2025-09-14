@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="CryptoNote" Height="450" Width="800"
         WindowStyle="None" ResizeMode="CanResizeWithGrip"
-        Background="#FF151313">
+        Background="#FF151313"
+        AllowsTransparency="True">
 
     <Window.Resources>
         <Style x:Key="SubMenuItemStyle" TargetType="MenuItem">
