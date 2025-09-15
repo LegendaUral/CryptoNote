@@ -1,7 +1,9 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
+using System.Security.Policy;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -34,8 +36,8 @@ namespace CryptoNote
 
         private void Share_Telegram(object sender, RoutedEventArgs e)
         {
-        
-            MessageBox.Show("Функция \"Поделиться в Telegram\" пока не реализована.");
+
+            Process.Start(new ProcessStartInfo("tg://") { UseShellExecute = true });
         }
 
         private void Share_Email(object sender, RoutedEventArgs e)
