@@ -1,9 +1,9 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
-using System.Security.Policy;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -13,7 +13,8 @@ namespace CryptoNote
     public partial class MainWindow : Window
     {
         private string currentFileName = "Новый файл.txt";
-        private const string EncryptedHeader = "CryptoNoteEncrypted";
+   
+        private const string EncryptedHeader = "---CryptoNote Encrypted File (Base64)---";
 
         public MainWindow() => InitializeComponent();
 
@@ -34,16 +35,111 @@ namespace CryptoNote
         private void Close_Click(object sender, RoutedEventArgs e) => Close();
         private void Exit_Click(object sender, RoutedEventArgs e) => Close();
 
+        private string? CreateTempShareFile()
+        {
+            var result = MessageBox.Show("Вы хотите отправить зашифрованный файл?", "Выбор типа файла", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Cancel) return null;
+
+            bool encrypt = result == MessageBoxResult.Yes;
+            string tempFilePath = Path.Combine(Path.GetTempPath(), "CryptoNote_Share.txt");
+
+            if (encrypt)
+            {
+                string? password = PromptPassword("Введите пароль для шифрования");
+                if (string.IsNullOrEmpty(password)) return null;
+
+               
+                string encryptedContent = EncryptString(MainTextBox.Text, password);
+                File.WriteAllText(tempFilePath, encryptedContent);
+            }
+            else
+            {
+                File.WriteAllText(tempFilePath, MainTextBox.Text);
+            }
+
+            return tempFilePath;
+        }
+
         private void Share_Telegram(object sender, RoutedEventArgs e)
         {
+            string? tempFilePath = CreateTempShareFile();
+            if (string.IsNullOrEmpty(tempFilePath)) return;
 
-            Process.Start(new ProcessStartInfo("tg://") { UseShellExecute = true });
+            try
+            {
+                var fileCollection = new StringCollection { tempFilePath };
+                Clipboard.SetFileDropList(fileCollection);
+                MessageBox.Show("Файл скопирован в буфер обмена.\n\nОткройте нужный чат в Telegram и нажмите Ctrl+V, чтобы отправить его.", "Готово", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Не удалось скопировать файл в буфер обмена: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            try
+            {
+                Process.Start(new ProcessStartInfo { FileName = "tg://", UseShellExecute = true });
+            }
+            catch
+            {
+                Process.Start(new ProcessStartInfo { FileName = "https://web.telegram.org/", UseShellExecute = true });
+            }
         }
 
         private void Share_Email(object sender, RoutedEventArgs e)
         {
-            
-            MessageBox.Show("Функция \"Поделиться в Email\" пока не реализована.");
+            string? tempFilePath = CreateTempShareFile();
+            if (string.IsNullOrEmpty(tempFilePath)) return;
+
+            try
+            {
+                var fileCollection = new StringCollection { tempFilePath };
+                Clipboard.SetFileDropList(fileCollection);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Не удалось скопировать файл в буфер обмена: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            string[] providers = { "Gmail", "Yandex", "Mail.ru", "Клиент по умолчанию" };
+            string? choice = PromptSelection("Выбор почтового сервиса", "Выберите сервис для отправки письма:", providers);
+
+            if (string.IsNullOrEmpty(choice)) return;
+
+            string subject = Uri.EscapeDataString("Файл из CryptoNote");
+            string body = Uri.EscapeDataString("Отправлено из приложения CryptoNote.");
+            string url = "";
+
+            switch (choice)
+            {
+                case "Gmail":
+                    url = $"https://mail.google.com/mail/?view=cm&fs=1&su={subject}&body={body}";
+                    break;
+                case "Yandex":
+                    url = $"https://mail.yandex.com/compose?subject={subject}&body={body}";
+                    break;
+                case "Mail.ru":
+                    url = $"https://e.mail.ru/compose?subject={subject}&body={body}";
+                    break;
+                case "Клиент по умолчанию":
+                    url = $"mailto:?subject={subject}&body={body}";
+                    break;
+            }
+
+            try
+            {
+                Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Не удалось открыть почтовый сервис: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            MessageBox.Show("Ваш почтовый сервис открыт.\n\nФайл скопирован в буфер обмена. Просто нажмите Ctrl+V в окне письма, чтобы прикрепить его.", "Готово", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
 
@@ -55,25 +151,49 @@ namespace CryptoNote
                 UpdateTitle(name.EndsWith(".txt") ? name : name + ".txt");
         }
 
+       
         private void OpenFile_Click(object sender, RoutedEventArgs e)
         {
             var dlg = new OpenFileDialog { Filter = "Текстовые файлы (*.txt)|*.txt|Все файлы (*.*)|*.*" };
             if (dlg.ShowDialog() != true) return;
 
-            byte[] fileData = File.ReadAllBytes(dlg.FileName);
-            bool encrypted = fileData.Length > EncryptedHeader.Length &&
-                             Encoding.UTF8.GetString(fileData, 0, EncryptedHeader.Length) == EncryptedHeader;
-
-            if (encrypted)
+            try
             {
-                string? password = PromptPassword("Введите пароль для открытия файла");
-                if (string.IsNullOrEmpty(password)) return;
-                try { MainTextBox.Text = DecryptString(fileData, password); }
-                catch { MessageBox.Show("Неверный пароль или поврежденный файл!"); return; }
-            }
-            else MainTextBox.Text = File.ReadAllText(dlg.FileName);
+                
+                string fileContent = File.ReadAllText(dlg.FileName);
 
-            UpdateTitle(System.IO.Path.GetFileName(dlg.FileName));
+               
+                if (fileContent.StartsWith(EncryptedHeader))
+                {
+                    string? password = PromptPassword("Введите пароль для открытия файла");
+                    if (string.IsNullOrEmpty(password)) return;
+
+                    try
+                    {
+                      
+                        MainTextBox.Text = DecryptString(fileContent, password);
+                    }
+                    catch (FormatException) 
+                    {
+                        MessageBox.Show("Файл поврежден (неверный формат Base64)!"); return;
+                    }
+                    catch 
+                    {
+                        MessageBox.Show("Неверный пароль или поврежденный файл!"); return;
+                    }
+                }
+                else
+                {
+                   
+                    MainTextBox.Text = fileContent;
+                }
+
+                UpdateTitle(Path.GetFileName(dlg.FileName));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Не удалось открыть файл: {ex.Message}");
+            }
         }
 
         private void SaveFile_Click(object sender, RoutedEventArgs e) =>
@@ -90,6 +210,7 @@ namespace CryptoNote
         private void CopyText_Click(object sender, RoutedEventArgs e) => MainTextBox.Copy();
         private void PasteText_Click(object sender, RoutedEventArgs e) => MainTextBox.Paste();
 
+        
         private void SaveText(string text, bool encrypt, string password = "")
         {
             var dlg = new SaveFileDialog
@@ -99,76 +220,106 @@ namespace CryptoNote
             };
             if (dlg.ShowDialog() != true) return;
 
-            if (encrypt)
+            try
             {
-                File.WriteAllBytes(dlg.FileName, EncryptString(text, password));
+                if (encrypt)
+                {
+                    
+                    string encryptedContent = EncryptString(text, password);
+                   
+                    File.WriteAllText(dlg.FileName, encryptedContent);
+                }
+                else
+                {
+                    File.WriteAllText(dlg.FileName, text);
+                }
+                UpdateTitle(Path.GetFileName(dlg.FileName));
             }
-            else File.WriteAllText(dlg.FileName, text);
-
-            UpdateTitle(System.IO.Path.GetFileName(dlg.FileName));
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Не удалось сохранить файл: {ex.Message}");
+            }
         }
 
         public static string? PromptPassword(string message) => PromptInput(message, "", true);
 
         public static string? PromptInput(string message, string defaultValue = "", bool isPassword = false)
         {
-            var inputWindow = new Window
-            {
-                Width = 300,
-                Height = 150,
-                Title = message,
-                WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                ResizeMode = ResizeMode.NoResize,
-                Background = System.Windows.Media.Brushes.DarkSlateGray
-            };
-
-            Control inputControl = isPassword
-                ? new PasswordBox { Margin = new Thickness(10), Background = System.Windows.Media.Brushes.Black, Foreground = System.Windows.Media.Brushes.White, BorderThickness = new Thickness(0) }
-                : new TextBox { Margin = new Thickness(10), Text = defaultValue, Background = System.Windows.Media.Brushes.Black, Foreground = System.Windows.Media.Brushes.White, BorderThickness = new Thickness(0) };
-
-            var okButton = new Button
-            {
-                Content = "OK",
-                Width = 70,
-                Margin = new Thickness(10),
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Background = System.Windows.Media.Brushes.Black,
-                Foreground = System.Windows.Media.Brushes.White
-            };
+            var inputWindow = new Window { Width = 300, Height = 150, Title = message, WindowStartupLocation = WindowStartupLocation.CenterScreen, ResizeMode = ResizeMode.NoResize, Background = System.Windows.Media.Brushes.DarkSlateGray };
+            Control inputControl = isPassword ? new PasswordBox { Margin = new Thickness(10), Background = System.Windows.Media.Brushes.Black, Foreground = System.Windows.Media.Brushes.White, BorderThickness = new Thickness(0) } : new TextBox { Margin = new Thickness(10), Text = defaultValue, Background = System.Windows.Media.Brushes.Black, Foreground = System.Windows.Media.Brushes.White, BorderThickness = new Thickness(0) };
+            var okButton = new Button { Content = "OK", Width = 70, Margin = new Thickness(10), HorizontalAlignment = HorizontalAlignment.Center, Background = System.Windows.Media.Brushes.Black, Foreground = System.Windows.Media.Brushes.White };
             okButton.Click += (s, e) => inputWindow.DialogResult = true;
-
             var panel = new StackPanel();
             panel.Children.Add(inputControl);
             panel.Children.Add(okButton);
             inputWindow.Content = panel;
-
             if (inputWindow.ShowDialog() != true) return null;
             return isPassword ? (inputControl as PasswordBox)?.Password : (inputControl as TextBox)?.Text;
         }
 
-        private static byte[] EncryptString(string text, string password)
+        public static string? PromptSelection(string title, string message, string[] options)
         {
-            using var aes = Aes.Create();
-            aes.Key = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(password));
-            aes.GenerateIV();
-            using var ms = new MemoryStream();
-            ms.Write(Encoding.UTF8.GetBytes(EncryptedHeader));
-            ms.Write(aes.IV);
-            using (var cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
-            using (var sw = new StreamWriter(cs)) sw.Write(text);
-            return ms.ToArray();
+            var selectionWindow = new Window { Title = title, SizeToContent = SizeToContent.WidthAndHeight, WindowStartupLocation = WindowStartupLocation.CenterScreen, Background = System.Windows.Media.Brushes.DarkSlateGray, ResizeMode = ResizeMode.NoResize };
+            var panel = new StackPanel { Margin = new Thickness(15) };
+            panel.Children.Add(new TextBlock { Text = message, Margin = new Thickness(5), FontSize = 14, Foreground = System.Windows.Media.Brushes.White, HorizontalAlignment = HorizontalAlignment.Center });
+            string? selectedOption = null;
+            var buttonPanel = new WrapPanel { HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 10, 0, 0) };
+            foreach (var option in options)
+            {
+                var button = new Button { Content = option, Margin = new Thickness(5), Padding = new Thickness(10, 5, 10, 5), Background = System.Windows.Media.Brushes.Black, Foreground = System.Windows.Media.Brushes.White };
+                button.Click += (s, e) => { selectedOption = option; selectionWindow.DialogResult = true; selectionWindow.Close(); };
+                buttonPanel.Children.Add(button);
+            }
+            panel.Children.Add(buttonPanel);
+            selectionWindow.Content = panel;
+            selectionWindow.ShowDialog();
+            return selectedOption;
         }
 
-        private static string DecryptString(byte[] data, string password)
+        
+        private static string EncryptString(string text, string password)
         {
             using var aes = Aes.Create();
             aes.Key = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(password));
+            aes.GenerateIV(); 
 
+            byte[] encryptedBytes;
+            using (var ms = new MemoryStream())
+            {
+                
+                ms.Write(aes.IV, 0, aes.IV.Length);
+              
+                using (var cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                using (var sw = new StreamWriter(cs))
+                {
+                    sw.Write(text);
+                }
+                encryptedBytes = ms.ToArray();
+            }
+
+        
+            return EncryptedHeader + "\n" + Convert.ToBase64String(encryptedBytes);
+        }
+
+        
+        private static string DecryptString(string fileContent, string password)
+        {
+            
+            string base64Content = fileContent.Substring(EncryptedHeader.Length).Trim();
+
+           
+            byte[] data = Convert.FromBase64String(base64Content);
+
+            using var aes = Aes.Create();
+            aes.Key = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(password));
+
+            
             byte[] iv = new byte[16];
-            Array.Copy(data, EncryptedHeader.Length, iv, 0, iv.Length);
+            Array.Copy(data, 0, iv, 0, iv.Length);
             aes.IV = iv;
 
-            using var ms = new MemoryStream(data, EncryptedHeader.Length + 16, data.Length - EncryptedHeader.Length - 16);
+           
+            using var ms = new MemoryStream(data, 16, data.Length - 16);
             using var cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Read);
             using var sr = new StreamReader(cs);
             return sr.ReadToEnd();
